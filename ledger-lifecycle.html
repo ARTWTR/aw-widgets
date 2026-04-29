@@ -39,7 +39,7 @@
         <div class="sublabel">Anyone</div>
       </div>
     </div>
-    <div class="version-marker">v3.0</div>
+    <div class="version-marker">v3.1</div>
     <div class="debug-overlay"></div>
   </div>
 
@@ -84,11 +84,27 @@
       function attachTapHandlers() {
         REPORTS.forEach(function(report) {
           var col = document.getElementById(report.colId);
-          if (!col) return;
-          col.style.cursor = 'pointer';
+          if (!col) {
+            AWW.debug('Tap handler: column not found ' + report.colId, 'error');
+            return;
+          }
+          AWW.debug('Tap handler attached: ' + report.colId, 'info');
+
+          // Use pointerup — more reliable than click inside iframes on mobile
+          // Falls back to click for non-pointer browsers
+          var fired = false;
+          col.addEventListener('pointerup', function(e) {
+            if (fired) return;
+            fired = true;
+            setTimeout(function() { fired = false; }, 300); // dedupe
+            AWW.debug('TAP: ' + report.colId, 'success');
+            openRecordsDrawer(report);
+          });
           col.addEventListener('click', function(e) {
-            // Don't open drawer if user is double-tapping the debug overlay
-            if (e.target.closest('.debug-overlay')) return;
+            if (fired) return;
+            fired = true;
+            setTimeout(function() { fired = false; }, 300);
+            AWW.debug('CLICK: ' + report.colId, 'success');
             openRecordsDrawer(report);
           });
         });

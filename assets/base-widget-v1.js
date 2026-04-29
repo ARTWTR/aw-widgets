@@ -49,10 +49,24 @@
      DEBUG OVERLAY
      =========================================================================== */
   AWW._wireDebugToggle = function() {
+    // Listen for double-tap on the version marker (small bottom-right corner)
+    // Previously listened on body, but that could conflict with widget tap handlers
+    var versionMarker = document.querySelector('.version-marker');
+    if (!versionMarker) {
+      // Fallback: bottom-right corner double-tap zone if no version marker
+      console.warn('[AWW] No .version-marker found — debug toggle disabled. Add ?debug to URL to force-show.');
+      return;
+    }
+    // Make version marker tappable
+    versionMarker.style.pointerEvents = 'auto';
+    versionMarker.style.cursor = 'pointer';
+    versionMarker.style.padding = '8px';
+    versionMarker.style.minWidth = '32px';
+    versionMarker.style.minHeight = '32px';
+
     var lastTap = 0;
-    document.body.addEventListener('click', function(e) {
-      // Don't toggle when tapping inside drawer or interactive elements
-      if (e.target.closest('.drawer, .input, .btn, .list-item')) return;
+    versionMarker.addEventListener('click', function(e) {
+      e.stopPropagation();
       var now = Date.now();
       if (now - lastTap < 400) {
         AWW.debugBar.classList.toggle('is-open');

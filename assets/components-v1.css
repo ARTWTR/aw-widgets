@@ -45,6 +45,16 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-3);
+  /* Mobile tap optimization */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+/* Visual feedback when tapping a column */
+.col:active .badge {
+  transform: scale(0.96);
+  transition: transform var(--duration-fast) var(--ease);
 }
 
 /* ===== LABELS ===== */
@@ -331,6 +341,22 @@
   font-weight: var(--weight-bold);
   color: var(--text-primary);
   letter-spacing: 0.5px;
+}
+
+/* Section header with left accent stripe — for section separation */
+.section-header--accent {
+  position: relative;
+  padding-left: calc(var(--space-5) + 8px);
+}
+
+.section-header--accent::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--accent);
 }
 
 /* ===== VERSION MARKER (always include in widgets) ===== */

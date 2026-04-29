@@ -24,10 +24,10 @@
   --text-secondary: #A8C5E5;     /* Labels, subtitles — cool muted blue */
   --text-tertiary: #6b7785;      /* Meta info, timestamps, low priority */
 
-  /* ===== COLORS — Single accent (for action/interactivity only) ===== */
-  --accent: #5EEAD4;             /* Soft teal — modern, distinct from semantic colors */
-  --accent-dim: #2dd4bf;         /* Slightly darker for hover/press states */
-  --accent-glow: rgba(94, 234, 212, 0.15); /* Subtle background tint for active states */
+  /* ===== COLORS — Single accent (for action/interactivity + section markers) ===== */
+  --accent: #38BDF8;             /* Sky cyan — vivid, water/sky resonance (ART WTR brand) */
+  --accent-dim: #0EA5E9;         /* Slightly darker for hover/press states */
+  --accent-glow: rgba(56, 189, 248, 0.18); /* Subtle background tint for active states */
 
   /* ===== COLORS — Semantic states (4, used sparingly) ===== */
   --state-success: #10b981;      /* Done, completed, healthy */

@@ -108,10 +108,10 @@
       <div class="swatch"><div class="swatch__chip" style="background: var(--text-tertiary)"></div><span class="swatch__label">--text-tertiary</span><span class="swatch__hex">#6b7785</span></div>
     </div>
 
-    <h2 class="showcase-section__title">Colors — Accent (single, for action)</h2>
+    <h2 class="showcase-section__title">Colors — Accent (single, for action + section markers)</h2>
     <div class="showcase-row">
-      <div class="swatch"><div class="swatch__chip" style="background: var(--accent)"></div><span class="swatch__label">--accent</span><span class="swatch__hex">#5EEAD4</span></div>
-      <div class="swatch"><div class="swatch__chip" style="background: var(--accent-dim)"></div><span class="swatch__label">--accent-dim</span><span class="swatch__hex">#2dd4bf</span></div>
+      <div class="swatch"><div class="swatch__chip" style="background: var(--accent)"></div><span class="swatch__label">--accent</span><span class="swatch__hex">#38BDF8</span></div>
+      <div class="swatch"><div class="swatch__chip" style="background: var(--accent-dim)"></div><span class="swatch__label">--accent-dim</span><span class="swatch__hex">#0EA5E9</span></div>
     </div>
 
     <h2 class="showcase-section__title">Colors — Semantic States</h2>
@@ -229,9 +229,18 @@
 
   <!-- SECTION HEADER -->
   <section class="showcase-section">
-    <h2 class="showcase-section__title">Component — Section Header</h2>
+    <h2 class="showcase-section__title">Component — Section Headers (with optional accent stripe)</h2>
+    <div class="showcase-tile-wrap" style="margin-bottom: var(--space-4);">
+      <div class="section-header">ORDER (default, no stripe)</div>
+    </div>
+    <div class="showcase-tile-wrap" style="margin-bottom: var(--space-4);">
+      <div class="section-header section-header--accent">ORDER (with accent stripe)</div>
+    </div>
+    <div class="showcase-tile-wrap" style="margin-bottom: var(--space-4);">
+      <div class="section-header section-header--accent">ORDER ACTION</div>
+    </div>
     <div class="showcase-tile-wrap">
-      <div class="section-header">ORDER ACTION</div>
+      <div class="section-header section-header--accent">LEDGER LIFE CYCLE</div>
     </div>
   </section>
 
