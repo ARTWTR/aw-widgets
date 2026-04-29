@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ledger Lifecycle</title>
+
+  <!--
+    Zoho Creator Widget JS SDK v2
+    Provides ZOHO.CREATOR.DATA.* APIs for fetching record counts.
+    Must load BEFORE our inline script attempts to use it.
+  -->
+  <script src="https://js.zohostatic.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
+
   <style>
     * {
       margin: 0;
@@ -66,6 +74,11 @@
       box-shadow:
         0 1px 0 rgba(255, 255, 255, 0.04) inset,
         0 4px 12px rgba(0, 0, 0, 0.4);
+      transition: opacity 0.2s ease;
+    }
+
+    .badge.loading {
+      opacity: 0.5;
     }
 
     .number {
@@ -88,30 +101,134 @@
     <div class="grid">
       <div class="col">
         <div class="label">Review</div>
-        <div class="badge"><div class="number" id="review-count">5</div></div>
+        <div class="badge" id="badge-review"><div class="number" id="review-count">—</div></div>
         <div class="sublabel">Reviewer</div>
       </div>
       <div class="col">
         <div class="label">Verify</div>
-        <div class="badge"><div class="number" id="verify-count">2</div></div>
+        <div class="badge" id="badge-verify"><div class="number" id="verify-count">—</div></div>
         <div class="sublabel">Accounts</div>
       </div>
       <div class="col">
         <div class="label">Send</div>
-        <div class="badge"><div class="number" id="send-count">1</div></div>
+        <div class="badge" id="badge-send"><div class="number" id="send-count">—</div></div>
         <div class="sublabel">Anyone</div>
       </div>
     </div>
   </div>
 
   <!--
-    NOTE: This v1 uses hardcoded counts (5/2/1) for visual verification.
-    Live data wiring via Creator JS API will be added in v2 once the
-    GitHub Pages → Zoho Creator embed is confirmed working.
-
     NAMING RULE: Subtitles are ROLES, never PERSON NAMES.
     Per AW_WIDGETS_Foundation_Decision.md — widgets must remain neutral
     as team membership changes.
+
+    DATA SOURCE: Three Creator reports
+      - to_review (Reviewer queue)
+      - Ledgers_To_Approve (Accounts queue)
+      - Ledgers_To_Send (Anyone queue)
+
+    REFRESH: Counts auto-refresh every 60 seconds while widget is open.
+
+    FALLBACK: If SDK fails to load or API fails, displays "—" instead
+    of crashing. All errors logged to console for debugging.
   -->
+
+  <script>
+    (function() {
+      'use strict';
+
+      // App config — these match the Creator app structure
+      var APP_NAME = 'aw-operations';
+      var REPORTS = [
+        { name: 'to_review', elementId: 'review-count', badgeId: 'badge-review' },
+        { name: 'Ledgers_To_Approve', elementId: 'verify-count', badgeId: 'badge-verify' },
+        { name: 'Ledgers_To_Send', elementId: 'send-count', badgeId: 'badge-send' }
+      ];
+
+      var REFRESH_INTERVAL_MS = 60 * 1000; // 60 seconds
+
+      function setLoading(loading) {
+        REPORTS.forEach(function(r) {
+          var badge = document.getElementById(r.badgeId);
+          if (badge) {
+            if (loading) {
+              badge.classList.add('loading');
+            } else {
+              badge.classList.remove('loading');
+            }
+          }
+        });
+      }
+
+      function updateCount(elementId, count) {
+        var el = document.getElementById(elementId);
+        if (el) {
+          el.textContent = count;
+        }
+      }
+
+      function fetchReportCount(report) {
+        var config = {
+          app_name: APP_NAME,
+          report_name: report.name
+        };
+
+        console.log('[ledger-lifecycle] Fetching count for ' + report.name);
+
+        return ZOHO.CREATOR.DATA.getRecordCount(config)
+          .then(function(response) {
+            console.log('[ledger-lifecycle] Response for ' + report.name + ':', response);
+            if (response && response.code === 3000 && response.result) {
+              var count = response.result.records_count;
+              updateCount(report.elementId, count);
+              return count;
+            } else {
+              console.warn('[ledger-lifecycle] Unexpected response shape for ' + report.name, response);
+              updateCount(report.elementId, '?');
+              return null;
+            }
+          })
+          .catch(function(err) {
+            console.error('[ledger-lifecycle] Error fetching ' + report.name + ':', err);
+            updateCount(report.elementId, '!');
+            return null;
+          });
+      }
+
+      function refreshAllCounts() {
+        if (typeof ZOHO === 'undefined' || !ZOHO.CREATOR || !ZOHO.CREATOR.DATA) {
+          console.warn('[ledger-lifecycle] Zoho SDK not available — skipping refresh. (This is expected if widget is viewed directly on GitHub.)');
+          REPORTS.forEach(function(r) { updateCount(r.elementId, '—'); });
+          return;
+        }
+
+        setLoading(true);
+        var promises = REPORTS.map(fetchReportCount);
+        Promise.all(promises).finally(function() {
+          setLoading(false);
+        });
+      }
+
+      function init() {
+        console.log('[ledger-lifecycle] Initializing widget...');
+
+        var inZoho = (typeof ZOHO !== 'undefined' && ZOHO.CREATOR && ZOHO.CREATOR.DATA);
+        if (!inZoho) {
+          console.warn('[ledger-lifecycle] Zoho Creator SDK not detected. Widget is likely being viewed standalone (e.g. directly on GitHub Pages). Counts will display as dashes.');
+          return;
+        }
+
+        console.log('[ledger-lifecycle] Zoho SDK detected. Fetching live counts.');
+        refreshAllCounts();
+        setInterval(refreshAllCounts, REFRESH_INTERVAL_MS);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
 </body>
 </html>
