@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ledger Lifecycle</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      background: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      color: #FFFFFF;
+      overflow: hidden;
+    }
+
+    .tile {
+      background: #141618;
+      padding: 14px 10px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .label {
+      font-size: 11px;
+      color: #A8C5E5;
+      letter-spacing: 0.2px;
+      text-align: center;
+    }
+
+    .badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #2a2e34, #1c1f24);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.04) inset,
+        0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .number {
+      font-size: 22px;
+      font-weight: 700;
+      color: #FFFFFF;
+      line-height: 1;
+    }
+
+    .sublabel {
+      font-size: 10px;
+      color: #A8C5E5;
+      text-align: center;
+      opacity: 0.85;
+    }
+  </style>
+</head>
+<body>
+  <div class="tile">
+    <div class="grid">
+      <div class="col">
+        <div class="label">Review</div>
+        <div class="badge"><div class="number" id="review-count">5</div></div>
+        <div class="sublabel">Pratik</div>
+      </div>
+      <div class="col">
+        <div class="label">Verify</div>
+        <div class="badge"><div class="number" id="verify-count">2</div></div>
+        <div class="sublabel">Accounts</div>
+      </div>
+      <div class="col">
+        <div class="label">Send</div>
+        <div class="badge"><div class="number" id="send-count">1</div></div>
+        <div class="sublabel">Anyone</div>
+      </div>
+    </div>
+  </div>
+
+  <!--
+    NOTE: This v1 uses hardcoded counts (5/2/1) for visual verification.
+    Live data wiring via Creator JS API will be added in v2 once the
+    GitHub Pages → Zoho Creator embed is confirmed working.
+  -->
+</body>
+</html>

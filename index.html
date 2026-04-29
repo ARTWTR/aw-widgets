@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ART WTR Widgets</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0a0a0b;
+      color: #FFFFFF;
+      padding: 32px;
+      min-height: 100vh;
+    }
+    h1 { font-size: 20px; margin-bottom: 4px; }
+    .subtitle { font-size: 12px; color: #A8C5E5; margin-bottom: 24px; }
+    .widget-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 600px;
+    }
+    .widget-card {
+      background: #141618;
+      border-radius: 8px;
+      padding: 16px;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.15s ease;
+    }
+    .widget-card:hover { background: #1c2024; }
+    .widget-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .widget-desc { font-size: 12px; color: #A8C5E5; }
+    .footer {
+      margin-top: 32px;
+      font-size: 10px;
+      color: #4a5566;
+      max-width: 600px;
+    }
+  </style>
+</head>
+<body>
+  <h1>ART WTR Widgets</h1>
+  <div class="subtitle">Custom widget library for Zoho Creator dashboards</div>
+
+  <div class="widget-list">
+    <a class="widget-card" href="./ledger-lifecycle.html">
+      <div class="widget-name">Ledger Lifecycle</div>
+      <div class="widget-desc">3-column display: Review / Verify / Send with rounded badges</div>
+    </a>
+  </div>
+
+  <div class="footer">
+    Hosted on GitHub Pages. Source: github.com/ARTWTR/aw-widgets. See <code>AW_WIDGETS_Foundation_Decision.md</code> in project knowledge for guardrails.
+  </div>
+</body>
+</html>
