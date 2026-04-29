@@ -1,0 +1,121 @@
+/* =============================================================================
+   ART WTR Design Tokens — v1.0
+   Last updated: 29 April 2026
+   Source of truth: AW_WIDGETS_Foundation_Decision.md
+   =============================================================================
+   Every widget in aw-widgets imports this file. Changing a token here updates
+   every widget. Versioned as -v1.css for stability — when v2 ships, individual
+   widgets can pin to whichever version they were tested against.
+   ============================================================================= */
+
+:root {
+  /* ===== COLORS — Background layers (4 levels, dark-first) ===== */
+  --bg-base: #0a0a0b;           /* Page/section header background — darkest */
+  --bg-tile: #141618;            /* Primary tile background — current ZML color */
+  --bg-tile-elevated: #1c1f24;   /* Slightly raised tile (interactive cards, drawer) */
+  --bg-overlay: rgba(0, 0, 0, 0.7); /* Modal/drawer scrim */
+
+  /* Badge gradient — current ledger circles */
+  --bg-badge-from: #2a2e34;
+  --bg-badge-to: #1c1f24;
+
+  /* ===== COLORS — Text layers (3 levels) ===== */
+  --text-primary: #FFFFFF;       /* Main numbers, titles */
+  --text-secondary: #A8C5E5;     /* Labels, subtitles — cool muted blue */
+  --text-tertiary: #6b7785;      /* Meta info, timestamps, low priority */
+
+  /* ===== COLORS — Single accent (for action/interactivity only) ===== */
+  --accent: #5EEAD4;             /* Soft teal — modern, distinct from semantic colors */
+  --accent-dim: #2dd4bf;         /* Slightly darker for hover/press states */
+  --accent-glow: rgba(94, 234, 212, 0.15); /* Subtle background tint for active states */
+
+  /* ===== COLORS — Semantic states (4, used sparingly) ===== */
+  --state-success: #10b981;      /* Done, completed, healthy */
+  --state-warning: #f59e0b;      /* Needs attention, pending too long */
+  --state-danger: #ef4444;       /* Error, blocked, overdue */
+  --state-info: #3b82f6;         /* Neutral info, in-progress */
+
+  /* ===== TYPOGRAPHY — Sizes ===== */
+  --text-xxs: 9px;               /* Meta info, version markers */
+  --text-xs: 10px;               /* Sublabels under badges */
+  --text-sm: 11px;               /* Labels above numbers, section headers */
+  --text-md: 13px;               /* Tile titles */
+  --text-lg: 16px;               /* Hero subtitles */
+  --text-xl: 22px;               /* Tile numbers */
+  --text-2xl: 26px;              /* Open/Done numbers */
+  --text-3xl: 38px;              /* Today number (hero) */
+  --text-4xl: 48px;              /* Single-stat hero displays */
+
+  /* ===== TYPOGRAPHY — Weights (only 2) ===== */
+  --weight-regular: 400;
+  --weight-bold: 700;
+
+  /* ===== TYPOGRAPHY — Font stack ===== */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, monospace;
+
+  /* ===== SPACING (8-step scale) ===== */
+  --space-1: 2px;                /* Tight inline */
+  --space-2: 4px;                /* Inside small components */
+  --space-3: 6px;                /* Default tight spacing */
+  --space-4: 8px;                /* Default spacing */
+  --space-5: 12px;               /* Tile internal padding (current standard) */
+  --space-6: 16px;               /* Larger tile padding */
+  --space-7: 24px;               /* Section breaks */
+  --space-8: 32px;               /* Major separators */
+
+  /* ===== SHADOWS (only 2) ===== */
+  --shadow-sm: 0 1px 0 rgba(255,255,255,0.04) inset, 0 2px 6px rgba(0,0,0,0.3);
+  --shadow-md: 0 1px 0 rgba(255,255,255,0.06) inset, 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-drawer: 0 -8px 24px rgba(0,0,0,0.6); /* Drawer slides up — shadow on top */
+
+  /* ===== BORDER RADIUS ===== */
+  --radius-sm: 4px;              /* Small interactive elements */
+  --radius-md: 8px;              /* Standard tiles */
+  --radius-lg: 12px;             /* Larger cards */
+  --radius-xl: 16px;             /* Drawer top corners */
+  --radius-full: 999px;          /* Pills, circles */
+
+  /* ===== ANIMATION (one feel for everything) ===== */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);  /* Slight overshoot, alive but not bouncy */
+  --duration-fast: 150ms;        /* Taps, color changes */
+  --duration-normal: 300ms;      /* Slide-ins, expansions, drawer open/close */
+  --duration-slow: 500ms;        /* Large reveals (rarely used) */
+
+  /* ===== Z-INDEX (predictable layering) ===== */
+  --z-tile: 1;
+  --z-drawer-scrim: 100;
+  --z-drawer: 101;
+  --z-debug: 9999;
+}
+
+/* ===== RESET — applied universally ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ===== BASE BODY — every widget starts from here ===== */
+html, body {
+  background: var(--bg-tile);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--text-primary);
+  overflow: hidden;
+  min-height: 100vh;
+  height: 100%;
+  width: 100%;
+  /* Disable iOS tap highlight (we use our own) */
+  -webkit-tap-highlight-color: transparent;
+  /* Prevent text selection on tap (feels app-native) */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection inside drawer content (users may want to copy values) */
+.drawer-content {
+  -webkit-user-select: text;
+  user-select: text;
+}

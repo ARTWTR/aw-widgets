@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ART WTR Design System Showcase</title>
+  <link rel="stylesheet" href="./assets/design-tokens-v1.css">
+  <link rel="stylesheet" href="./assets/components-v1.css">
+
+  <style>
+    /* Showcase-specific layout (not part of the design system) */
+    body {
+      overflow: auto !important;
+      padding: var(--space-6);
+      min-height: 100vh;
+      background: var(--bg-base);
+    }
+
+    .showcase-section {
+      margin-bottom: var(--space-8);
+    }
+
+    .showcase-section__title {
+      font-size: var(--text-md);
+      color: var(--text-secondary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: var(--space-4);
+      font-weight: var(--weight-bold);
+    }
+
+    .showcase-row {
+      display: flex;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: var(--space-5);
+    }
+
+    .showcase-tile-wrap {
+      width: 100%;
+      max-width: 380px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .swatch {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .swatch__chip {
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .swatch__label {
+      font-size: var(--text-xs);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+
+    .swatch__hex {
+      font-size: var(--text-xxs);
+      color: var(--text-tertiary);
+      font-family: var(--font-mono);
+    }
+
+    .type-sample {
+      color: var(--text-primary);
+      margin-bottom: var(--space-3);
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-5);
+    }
+
+    .type-sample__token {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--text-tertiary);
+      width: 90px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 style="font-size: var(--text-3xl); margin-bottom: var(--space-2);">ART WTR Design System</h1>
+  <p style="color: var(--text-secondary); font-size: var(--text-md); margin-bottom: var(--space-8);">v1.0 — 29 Apr 2026</p>
+
+  <!-- COLORS -->
+  <section class="showcase-section">
+    <h2 class="showcase-section__title">Colors — Backgrounds</h2>
+    <div class="showcase-row">
+      <div class="swatch"><div class="swatch__chip" style="background: var(--bg-base)"></div><span class="swatch__label">--bg-base</span><span class="swatch__hex">#0a0a0b</span></div>
+      <div class="swatch"><div class="swatch__chip" style="background: var(--bg-tile)"></div><span class="swatch__label">--bg-tile</span><span class="swatch__hex">#141618</span></div>
+      <div class="swatch"><div class="swatch__chip" style="background: var(--bg-tile-elevated)"></div><span class="swatch__label">--bg-tile-elevated</span><span class="swatch__hex">#1c1f24</span></div>
+    </div>
+
+    <h2 class="showcase-section__title">Colors — Text</h2>
+    <div class="showcase-row">
+      <div class="swatch"><div class="swatch__chip" style="background: var(--text-primary)"></div><span class="swatch__label">--text-primary</span><span class="swatch__hex">#FFFFFF</span></div>
+      <div class="swatch"><div class="swatch__chip" style="background: var(--text-secondary)"></div><span class="swatch__label">--text-secondary</span><span class="swatch__hex">#A8C5E5</span></div>
+      <div class="swatch"><div class="swatch__chip" style="background: var(--text-tertiary)"></div><span class="swatch__label">--text-tertiary</span><span class="swatch__hex">#6b7785</span></div>
+    </div>
+
+    <h2 class="showcase-section__title">Colors — Accent (single, for action)</h2>
+    <div class="showcase-row">
+      <div class="swatch"><div class="swatch__chip" style="background: var(--accent)"></div><span class="swatch__label">--accent</span><span class="swatch__hex">#5EEAD4</span></div>
+      <div class="swatch"><div class="swatch__chip" style="background: var(--accent-dim)"></div><span class="swatch__label">--accent-dim</span><span class="swatch__hex">#2dd4bf</span></div>
+    </div>
+
+    <h2 class="showcase-section__title">Colors — Semantic States</h2>
+    <div class="showcase-row">
+      <div class="swatch"><div class="swatch__chip" style="background: var(--state-success)"></div><span class="swatch__label">success</span><span class="swatch__hex">#10b981</span></div>
+      <div class="swatch"><div class="swatch__chip" style="background: var(--state-warning)"></div><span class="swatch__label">warning</span><span class="swatch__hex">#f59e0b</span></div>
+      <div class="swatch"><div class="swatch__chip" style="background: var(--state-danger)"></div><span class="swatch__label">danger</span><span class="swatch__hex">#ef4444</span></div>
+      <div class="swatch"><div class="swatch__chip" style="background: var(--state-info)"></div><span class="swatch__label">info</span><span class="swatch__hex">#3b82f6</span></div>
+    </div>
+  </section>
+
+  <!-- TYPOGRAPHY -->
+  <section class="showcase-section">
+    <h2 class="showcase-section__title">Typography Scale</h2>
+    <div class="type-sample" style="font-size: var(--text-4xl); font-weight: 700;"><span class="type-sample__token">--text-4xl</span>48</div>
+    <div class="type-sample" style="font-size: var(--text-3xl); font-weight: 700;"><span class="type-sample__token">--text-3xl</span>38 Hero</div>
+    <div class="type-sample" style="font-size: var(--text-2xl); font-weight: 700;"><span class="type-sample__token">--text-2xl</span>26 Open/Done</div>
+    <div class="type-sample" style="font-size: var(--text-xl); font-weight: 700;"><span class="type-sample__token">--text-xl</span>22 Number</div>
+    <div class="type-sample" style="font-size: var(--text-lg);"><span class="type-sample__token">--text-lg</span>16 Subtitle</div>
+    <div class="type-sample" style="font-size: var(--text-md); font-weight: 700;"><span class="type-sample__token">--text-md</span>13 Tile Title</div>
+    <div class="type-sample" style="font-size: var(--text-sm); color: var(--text-secondary);"><span class="type-sample__token">--text-sm</span>11 LABEL</div>
+    <div class="type-sample" style="font-size: var(--text-xs); color: var(--text-secondary);"><span class="type-sample__token">--text-xs</span>10 sublabel</div>
+    <div class="type-sample" style="font-size: var(--text-xxs); color: var(--text-tertiary);"><span class="type-sample__token">--text-xxs</span>9 meta</div>
+  </section>
+
+  <!-- TILE: 3-column with badges (current ledger pattern) -->
+  <section class="showcase-section">
+    <h2 class="showcase-section__title">Component — 3-Column Ledger Tile</h2>
+    <div class="showcase-tile-wrap">
+      <div class="tile" style="min-height: auto; padding: var(--space-5) var(--space-4);">
+        <div class="grid-3">
+          <div class="col">
+            <div class="label">Review</div>
+            <div class="badge"><div class="number">5</div></div>
+            <div class="sublabel">Reviewer</div>
+          </div>
+          <div class="col">
+            <div class="label">Verify</div>
+            <div class="badge"><div class="number">2</div></div>
+            <div class="sublabel">Accounts</div>
+          </div>
+          <div class="col">
+            <div class="label">Send</div>
+            <div class="badge"><div class="number">1</div></div>
+            <div class="sublabel">Anyone</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BADGE STATES -->
+  <section class="showcase-section">
+    <h2 class="showcase-section__title">Component — Badge States</h2>
+    <div class="showcase-row">
+      <div class="col">
+        <div class="badge"><div class="number">0</div></div>
+        <div class="sublabel">Default</div>
+      </div>
+      <div class="col">
+        <div class="badge badge--has-items"><div class="number">3</div></div>
+        <div class="sublabel">Has items (teal ring)</div>
+      </div>
+      <div class="col">
+        <div class="badge badge--stale"><div class="number">5</div></div>
+        <div class="sublabel">Stale &gt;24h (amber)</div>
+      </div>
+      <div class="col">
+        <div class="badge badge--urgent"><div class="number">8</div></div>
+        <div class="sublabel">Urgent (red)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BUTTONS -->
+  <section class="showcase-section">
+    <h2 class="showcase-section__title">Component — Buttons</h2>
+    <div class="showcase-row">
+      <button class="btn btn--primary">Send Now</button>
+      <button class="btn btn--secondary">Cancel</button>
+      <button class="btn btn--danger">Delete</button>
+      <button class="btn btn--ghost">Skip</button>
+    </div>
+  </section>
+
+  <!-- INPUT -->
+  <section class="showcase-section">
+    <h2 class="showcase-section__title">Component — Input</h2>
+    <div class="showcase-tile-wrap">
+      <input class="input" placeholder="Enter vehicle number..." />
+    </div>
+  </section>
+
+  <!-- LIST ITEM -->
+  <section class="showcase-section">
+    <h2 class="showcase-section__title">Component — List Item (used inside drawer)</h2>
+    <div class="showcase-tile-wrap" style="background: var(--bg-tile-elevated); padding: var(--space-4); border-radius: var(--radius-md);">
+      <div class="list-item">
+        <div class="list-item__title">ABC Restaurant</div>
+        <div class="list-item__meta">2h ago</div>
+        <div class="list-item__chevron">›</div>
+      </div>
+      <div class="list-item">
+        <div class="list-item__title">XYZ Cafe</div>
+        <div class="list-item__meta">5h ago</div>
+        <div class="list-item__chevron">›</div>
+      </div>
+      <div class="list-item">
+        <div class="list-item__title">QRS Hotel</div>
+        <div class="list-item__meta">1d ago</div>
+        <div class="list-item__chevron">›</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION HEADER -->
+  <section class="showcase-section">
+    <h2 class="showcase-section__title">Component — Section Header</h2>
+    <div class="showcase-tile-wrap">
+      <div class="section-header">ORDER ACTION</div>
+    </div>
+  </section>
+
+</body>
+</html>

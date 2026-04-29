@@ -5,326 +5,151 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ledger Lifecycle</title>
 
-  <!-- Cache-bust marker: v2.3-2026-04-29 -->
+  <!-- Shared design system -->
+  <link rel="stylesheet" href="./assets/design-tokens-v1.css">
+  <link rel="stylesheet" href="./assets/components-v1.css">
+
+  <!-- Zoho Widget JS SDK v2 -->
   <script src="https://js.zohostatic.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
 
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    html, body {
-      background: #141618;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      color: #FFFFFF;
-      overflow: hidden;
-      min-height: 100vh;
-      height: 100%;
-      width: 100%;
-    }
-
-    .tile {
-      background: #141618;
-      padding: 14px 10px;
-      width: 100%;
-      min-height: 100vh;
-      box-sizing: border-box;
-      display: flex;
-      align-items: center;
-      position: relative;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 4px;
-      align-items: center;
-      width: 100%;
-    }
-
-    .col {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .label {
-      font-size: 11px;
-      color: #A8C5E5;
-      text-align: center;
-    }
-
-    .badge {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: linear-gradient(145deg, #2a2e34, #1c1f24);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 4px 12px rgba(0,0,0,0.4);
-    }
-
-    .number {
-      font-size: 22px;
-      font-weight: 700;
-      color: #FFFFFF;
-      line-height: 1;
-    }
-
-    .sublabel {
-      font-size: 10px;
-      color: #A8C5E5;
-      text-align: center;
-    }
-
-    .version {
-      position: absolute;
-      bottom: 2px;
-      right: 4px;
-      font-size: 7px;
-      color: #4a5566;
-      opacity: 0.5;
-      pointer-events: none;
-    }
-
-    .debug {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.92);
-      color: #00ff88;
-      font-family: monospace;
-      font-size: 9px;
-      padding: 6px 8px;
-      overflow: auto;
-      display: none;
-      z-index: 10;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .debug.show { display: block; }
-    .debug-line { margin-bottom: 2px; word-break: break-all; }
-    .debug-line.error { color: #ff6688; }
-    .debug-line.success { color: #00ff88; }
-    .debug-line.warn { color: #ffaa44; }
-    .debug-line.info { color: #88ccff; }
-  </style>
+  <!-- Shared base widget JS -->
+  <script src="./assets/base-widget-v1.js"></script>
 </head>
 <body>
-  <div class="tile" id="tile">
-    <div class="grid">
-      <div class="col">
+  <div class="tile">
+    <div class="grid-3">
+      <!-- Review column -->
+      <div class="col" id="col-review" data-report="to_review" data-title="Pending Review">
         <div class="label">Review</div>
-        <div class="badge"><div class="number" id="review-count">—</div></div>
+        <div class="badge" id="badge-review"><div class="number" id="count-review">—</div></div>
         <div class="sublabel">Reviewer</div>
       </div>
-      <div class="col">
+
+      <!-- Verify column -->
+      <div class="col" id="col-verify" data-report="Ledgers_To_Approve" data-title="Pending Approval">
         <div class="label">Verify</div>
-        <div class="badge"><div class="number" id="verify-count">—</div></div>
+        <div class="badge" id="badge-verify"><div class="number" id="count-verify">—</div></div>
         <div class="sublabel">Accounts</div>
       </div>
-      <div class="col">
+
+      <!-- Send column -->
+      <div class="col" id="col-send" data-report="Ledgers_To_Send" data-title="Ready to Send">
         <div class="label">Send</div>
-        <div class="badge"><div class="number" id="send-count">—</div></div>
+        <div class="badge" id="badge-send"><div class="number" id="count-send">—</div></div>
         <div class="sublabel">Anyone</div>
       </div>
     </div>
-    <div class="version">v2.3</div>
-    <div class="debug" id="debug-bar"></div>
+    <div class="version-marker">v3.0</div>
+    <div class="debug-overlay"></div>
   </div>
 
   <script>
     (function() {
       'use strict';
 
-      var APP_NAME = 'aw-operations';
+      AWW.init({ appName: 'aw-operations' });
+
       var REPORTS = [
-        { name: 'to_review', elementId: 'review-count' },
-        { name: 'Ledgers_To_Approve', elementId: 'verify-count' },
-        { name: 'Ledgers_To_Send', elementId: 'send-count' }
+        { name: 'to_review', countId: 'count-review', badgeId: 'badge-review', colId: 'col-review' },
+        { name: 'Ledgers_To_Approve', countId: 'count-verify', badgeId: 'badge-verify', colId: 'col-verify' },
+        { name: 'Ledgers_To_Send', countId: 'count-send', badgeId: 'badge-send', colId: 'col-send' }
       ];
 
-      var FETCH_TIMEOUT_MS = 8000; // 8 seconds per call before we give up
-
-      var debugBar = document.getElementById('debug-bar');
-
-      // Toggle debug overlay with double-tap on the tile
-      var lastTap = 0;
-      document.getElementById('tile').addEventListener('click', function(e) {
-        var now = Date.now();
-        if (now - lastTap < 400) {
-          debugBar.classList.toggle('show');
-        }
-        lastTap = now;
-      });
-
-      // Auto-show debug if URL has ?debug
-      if (window.location.search.indexOf('debug') !== -1) {
-        debugBar.classList.add('show');
-      }
-
-      function timestamp() {
-        var d = new Date();
-        return d.toTimeString().substring(0, 8);
-      }
-
-      function debug(msg, type) {
-        type = type || 'info';
-        console.log('[ledger] ' + msg);
-        var line = document.createElement('div');
-        line.className = 'debug-line ' + type;
-        line.textContent = '[' + timestamp() + '] ' + msg;
-        debugBar.appendChild(line);
-        debugBar.scrollTop = debugBar.scrollHeight;
-      }
-
-      function updateCount(elementId, count) {
-        var el = document.getElementById(elementId);
-        if (el) el.textContent = count;
-      }
-
-      // Wrap any promise with a timeout
-      function withTimeout(promise, ms, label) {
-        return new Promise(function(resolve, reject) {
-          var timedOut = false;
-          var timer = setTimeout(function() {
-            timedOut = true;
-            reject(new Error('TIMEOUT after ' + ms + 'ms: ' + label));
-          }, ms);
-
-          promise.then(
-            function(result) {
-              if (!timedOut) {
-                clearTimeout(timer);
-                resolve(result);
-              }
-            },
-            function(err) {
-              if (!timedOut) {
-                clearTimeout(timer);
-                reject(err);
-              }
-            }
-          );
-        });
-      }
-
-      function extractCount(response) {
-        if (response === null || response === undefined) return null;
-        if (typeof response === 'number') return response;
-        if (typeof response === 'string' && /^\d+$/.test(response)) return response;
-        if (response.result && response.result.records_count !== undefined) return response.result.records_count;
-        if (response.records_count !== undefined) return response.records_count;
-        if (response.data && response.data.records_count !== undefined) return response.data.records_count;
-        return null;
-      }
-
-      function isEmptyReportError(err) {
-        if (!err) return false;
-        var s = '';
-        try { s = JSON.stringify(err); } catch(e) { s = String(err); }
-        if (s.indexOf('9220') !== -1) return true;
-        if (s.toLowerCase().indexOf('no records') !== -1) return true;
-        return false;
-      }
-
-      function isTimeoutError(err) {
-        return err && err.message && err.message.indexOf('TIMEOUT') === 0;
-      }
-
-      function fetchReportCount(report) {
-        var config = { app_name: APP_NAME, report_name: report.name };
-        debug('Fetching ' + report.name + ' (start)...', 'info');
-
-        var apiPromise;
-        try {
-          apiPromise = ZOHO.CREATOR.DATA.getRecordCount(config);
-        } catch (syncErr) {
-          var s = '';
-          try { s = JSON.stringify(syncErr); } catch(e) { s = String(syncErr); }
-          debug(report.name + ' SYNC THROW: ' + s, 'error');
-          if (isEmptyReportError(syncErr)) {
-            updateCount(report.elementId, '0');
-            return Promise.resolve(0);
+      function updateCount(report, count) {
+        var el = document.getElementById(report.countId);
+        var badge = document.getElementById(report.badgeId);
+        if (el) el.textContent = (count === null ? '—' : count);
+        if (badge) {
+          // Toggle the "has items" ring based on count > 0
+          if (count && parseInt(count, 10) > 0) {
+            badge.classList.add('badge--has-items');
+          } else {
+            badge.classList.remove('badge--has-items');
           }
-          updateCount(report.elementId, '!');
-          return Promise.resolve(null);
         }
-
-        if (!apiPromise || typeof apiPromise.then !== 'function') {
-          debug(report.name + ' did not return a promise: ' + (typeof apiPromise), 'error');
-          updateCount(report.elementId, '?');
-          return Promise.resolve(null);
-        }
-
-        return withTimeout(apiPromise, FETCH_TIMEOUT_MS, report.name)
-          .then(function(response) {
-            var rawShape = '';
-            try { rawShape = JSON.stringify(response).substring(0, 250); } catch(e) {}
-            debug(report.name + ' OK: ' + rawShape, 'success');
-            var count = extractCount(response);
-            if (count !== null) {
-              updateCount(report.elementId, count);
-              return count;
-            }
-            debug(report.name + ' UNEXPECTED SHAPE', 'warn');
-            updateCount(report.elementId, '?');
-            return null;
-          })
-          .catch(function(err) {
-            var errStr = '';
-            try { errStr = JSON.stringify(err).substring(0, 250); } catch(e) { errStr = String(err); }
-
-            if (isTimeoutError(err)) {
-              debug(report.name + ' TIMEOUT (hung)', 'error');
-              updateCount(report.elementId, '⏱');
-              return null;
-            }
-            if (isEmptyReportError(err)) {
-              debug(report.name + ' EMPTY (=0): ' + errStr, 'info');
-              updateCount(report.elementId, '0');
-              return 0;
-            }
-            debug(report.name + ' ERROR: ' + errStr, 'error');
-            updateCount(report.elementId, '!');
-            return null;
-          });
       }
 
-      // Sequential fetch — one report at a time, not parallel
-      function refreshAllSequential() {
-        if (typeof ZOHO === 'undefined' || !ZOHO.CREATOR || !ZOHO.CREATOR.DATA) {
-          debug('Zoho SDK not detected (standalone mode)', 'error');
-          REPORTS.forEach(function(r) { updateCount(r.elementId, '—'); });
-          return;
-        }
+      function refreshAll() {
+        var tasks = REPORTS.map(function(report) {
+          return function() {
+            return AWW.fetchCount(report.name).then(function(count) {
+              updateCount(report, count);
+            });
+          };
+        });
+        return AWW.runSequential(tasks);
+      }
 
-        // Chain promises sequentially
-        var chain = Promise.resolve();
+      // Tap-to-expand: when user taps a column, open drawer with records
+      function attachTapHandlers() {
         REPORTS.forEach(function(report) {
-          chain = chain.then(function() {
-            return fetchReportCount(report);
+          var col = document.getElementById(report.colId);
+          if (!col) return;
+          col.style.cursor = 'pointer';
+          col.addEventListener('click', function(e) {
+            // Don't open drawer if user is double-tapping the debug overlay
+            if (e.target.closest('.debug-overlay')) return;
+            openRecordsDrawer(report);
           });
         });
-        chain.then(function() {
-          debug('All fetches complete', 'success');
+      }
+
+      function openRecordsDrawer(report) {
+        var col = document.getElementById(report.colId);
+        var title = col.dataset.title || report.name;
+
+        AWW.Drawer.open({ title: title, content: '<div class="drawer-content__loading">Loading records...</div>' });
+
+        AWW.fetchRecords(report.name).then(function(records) {
+          if (!records || records.length === 0) {
+            AWW.Drawer.setEmpty('No records in this queue.');
+            return;
+          }
+
+          var html = records.map(function(rec) {
+            // Try to extract a meaningful title from the record
+            // Common field names: client name, customer name, etc.
+            var title = rec.client_name || rec.customer_name || rec.Name || rec.title ||
+                        (rec.books_customer && rec.books_customer.display_value) ||
+                        rec.Email || rec.ID || 'Record ' + (rec.ID || '');
+            var meta = rec.Added_Time || rec.Modified_Time || '';
+
+            return '<div class="list-item" data-record-id="' + (rec.ID || '') + '">' +
+                     '<div class="list-item__title">' + escapeHtml(String(title)) + '</div>' +
+                     (meta ? '<div class="list-item__meta">' + escapeHtml(formatTime(meta)) + '</div>' : '') +
+                     '<div class="list-item__chevron">›</div>' +
+                   '</div>';
+          }).join('');
+
+          AWW.Drawer.setContent(html);
         });
+      }
+
+      function escapeHtml(s) {
+        return s.replace(/[&<>"']/g, function(c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
+
+      function formatTime(t) {
+        // Best-effort time formatting
+        if (!t) return '';
+        try {
+          var d = new Date(t);
+          if (isNaN(d.getTime())) return t;
+          var diff = Date.now() - d.getTime();
+          var hours = Math.floor(diff / 3600000);
+          if (hours < 1) return 'just now';
+          if (hours < 24) return hours + 'h ago';
+          return Math.floor(hours / 24) + 'd ago';
+        } catch (e) { return t; }
       }
 
       function init() {
-        debug('Init v2.3 sequential — ' + new Date().toISOString(), 'info');
-        debug('SDK present: ' + (typeof ZOHO !== 'undefined'), 'info');
-        if (typeof ZOHO !== 'undefined' && ZOHO.CREATOR) {
-          debug('CREATOR keys: ' + Object.keys(ZOHO.CREATOR).join(','), 'info');
-          if (ZOHO.CREATOR.DATA) {
-            debug('DATA keys: ' + Object.keys(ZOHO.CREATOR.DATA).join(','), 'info');
-          }
-        }
-        refreshAllSequential();
-        setInterval(refreshAllSequential, 60000);
+        attachTapHandlers();
+        refreshAll();
+        setInterval(refreshAll, 60000);
+        AWW.enablePullToRefresh(refreshAll);
       }
 
       if (document.readyState === 'loading') {
