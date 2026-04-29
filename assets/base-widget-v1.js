@@ -49,31 +49,50 @@
      DEBUG OVERLAY
      =========================================================================== */
   AWW._wireDebugToggle = function() {
-    // Listen for double-tap on the version marker (small bottom-right corner)
-    // Previously listened on body, but that could conflict with widget tap handlers
-    var versionMarker = document.querySelector('.version-marker');
-    if (!versionMarker) {
-      // Fallback: bottom-right corner double-tap zone if no version marker
-      console.warn('[AWW] No .version-marker found — debug toggle disabled. Add ?debug to URL to force-show.');
+    // PRODUCTION MODE: skip debug entirely if URL has ?prod=1
+    // Use this when widget is live for real users — no debug overlay possible.
+    if (window.location.search.indexOf('prod=1') !== -1) {
+      AWW.debugBar.style.display = 'none';
+      AWW.debugBar.parentNode.removeChild(AWW.debugBar);
+      AWW.debugBar = null;
+      console.log('[AWW] Production mode — debug overlay disabled.');
       return;
     }
-    // Make version marker tappable
-    versionMarker.style.pointerEvents = 'auto';
-    versionMarker.style.cursor = 'pointer';
-    versionMarker.style.padding = '8px';
-    versionMarker.style.minWidth = '32px';
-    versionMarker.style.minHeight = '32px';
+
+    // DEBUG MODE: create a dedicated invisible 44x44 tap zone in top-left corner
+    // (not bottom — bottom can be obscured by Zoho's mobile chrome)
+    // This is more reliable than tapping the tiny version marker.
+    var tapZone = document.createElement('div');
+    tapZone.id = 'aww-debug-tap-zone';
+    tapZone.style.cssText =
+      'position: absolute;' +
+      'top: 0;' +
+      'left: 0;' +
+      'width: 44px;' +
+      'height: 44px;' +
+      'z-index: 9998;' +
+      'background: transparent;' +  // invisible
+      'cursor: pointer;' +
+      '-webkit-tap-highlight-color: transparent;' +
+      'touch-action: manipulation;';
+    document.body.appendChild(tapZone);
 
     var lastTap = 0;
-    versionMarker.addEventListener('click', function(e) {
+    function handleTap(e) {
       e.stopPropagation();
+      e.preventDefault();
       var now = Date.now();
-      if (now - lastTap < 400) {
+      if (now - lastTap < 500) {
         AWW.debugBar.classList.toggle('is-open');
+        AWW.debug('Debug overlay toggled (double-tap top-left corner)', 'info');
       }
       lastTap = now;
-    });
-    if (window.location.search.indexOf('debug') !== -1) {
+    }
+    tapZone.addEventListener('pointerup', handleTap);
+    tapZone.addEventListener('click', handleTap);
+
+    // Also force-show via URL flag for laptop testing
+    if (window.location.search.indexOf('debug=1') !== -1) {
       AWW.debugBar.classList.add('is-open');
     }
   };
@@ -81,6 +100,7 @@
   AWW.debug = function(msg, type) {
     type = type || 'info';
     console.log('[AWW] ' + msg);
+    // In production mode, debugBar is removed — only console.log
     if (!AWW.debugBar) return;
     var line = document.createElement('div');
     line.className = 'debug-line debug-line--' + type;
@@ -240,36 +260,49 @@
 
   /**
    * Navigate the parent window to a Zoho Creator URL.
-   * Common URL patterns:
-   *   '#Report:report_link_name'         — open a report in current app
-   *   '#Form:form_link_name'             — open a form
-   *   '#Page:page_link_name'             — open a page
-   *   'https://full.url'                 — open external URL
+   * Per Zoho docs: action='open' requires both 'url' AND 'window' params.
+   * 'window: same' is essential — 'new' opens a separate browser window (silently
+   * fails on mobile native apps).
    *
-   * @param {string} url - The URL to navigate to (relative or absolute)
-   * @param {string} action - 'open' (default) navigates parent, 'close' closes widget
+   * @param {string} url - Absolute URL or relative hash like '#Report:name'
+   * @param {object} opts - {window: 'same'|'new'} — defaults to 'same'
    */
-  AWW.navigate = function(url, action) {
-    action = action || 'open';
+  AWW.navigate = function(url, opts) {
+    opts = opts || {};
+    var windowMode = opts.window || 'same';
+
     if (typeof ZOHO === 'undefined' || !ZOHO.CREATOR || !ZOHO.CREATOR.UTIL) {
       AWW.debug('navigate: SDK unavailable (standalone mode) — would have opened ' + url, 'warn');
       return false;
     }
     try {
-      ZOHO.CREATOR.UTIL.navigateParentURL({ action: action, url: url });
-      AWW.debug('navigate: ' + url, 'success');
+      var config = {
+        action: 'open',
+        url: url,
+        window: windowMode
+      };
+      AWW.debug('navigate config: ' + JSON.stringify(config), 'info');
+      ZOHO.CREATOR.UTIL.navigateParentURL(config);
+      AWW.debug('navigate: ' + url + ' (' + windowMode + ')', 'success');
       return true;
     } catch (err) {
-      AWW.debug('navigate ERROR: ' + err.message, 'error');
+      AWW.debug('navigate ERROR: ' + (err.message || JSON.stringify(err)), 'error');
       return false;
     }
   };
 
   /**
    * Convenience helper: navigate to a report by link name.
+   * Builds absolute URL using current Zoho host (not relative hash).
    */
   AWW.navigateToReport = function(reportLinkName) {
-    return AWW.navigate('#Report:' + reportLinkName);
+    // Build absolute URL — relative hashes don't work reliably in widget context
+    // Per Zoho docs example: https://creatorapp.zoho.com/owner/app/#Report:name
+    var ownerName = 'artwtrbeverages';
+    var appName = AWW.appName || 'aw-operations';
+    // Use .in TLD for India edition
+    var url = 'https://creatorapp.zoho.in/' + ownerName + '/' + appName + '/#Report:' + reportLinkName;
+    return AWW.navigate(url, { window: 'same' });
   };
 
   /* ===========================================================================
