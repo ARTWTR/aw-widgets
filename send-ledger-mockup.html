@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Send Ledger Tile — Styling Options</title>
+  <link rel="stylesheet" href="./assets/design-tokens-v1.css">
+  <link rel="stylesheet" href="./assets/components-v1.css">
+  <style>
+    body {
+      overflow: auto !important;
+      padding: 20px 16px;
+      background: var(--bg-base);
+      min-height: 100vh;
+    }
+    .mockup-section {
+      margin-bottom: 32px;
+    }
+    .mockup-title {
+      font-size: 11px;
+      color: var(--text-secondary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .mockup-subtitle {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      margin-bottom: 12px;
+    }
+    .phone-frame {
+      width: 360px;
+      max-width: 100%;
+      background: #0a0a0b;
+    }
+
+    /* ---- LEDGER LIFE CYCLE section header (matches your existing) ---- */
+    .section-hdr-blue {
+      background: #0a0a0b;
+      padding: 6px 12px 4px;
+      color: #38BDF8;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ---- Ledger lifecycle widget proxy (just for context) ---- */
+    .ll-proxy {
+      background: #141618;
+      padding: 14px 10px;
+      display: flex;
+      justify-content: space-around;
+      margin-top: 4px;
+    }
+    .ll-col { text-align: center; }
+    .ll-col .lbl { font-size: 11px; color: #A8C5E5; }
+    .ll-col .badge {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: linear-gradient(145deg, #2a2e34, #1c1f24);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 4px 12px rgba(0,0,0,0.4);
+      margin: 6px auto;
+    }
+    .ll-col .num { font-size: 22px; font-weight: 700; color: #FFF; }
+    .ll-col .sub { font-size: 10px; color: #A8C5E5; }
+
+    /* ---- Stuck Or Error tile (restyled to match dashboard) ---- */
+    .tile-stuck {
+      background: #141618;
+      padding: 12px;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+    }
+    .tile-stuck__left { flex: 0 0 75%; padding-right: 6px; }
+    .tile-stuck__title { font-size: 13px; font-weight: 700; color: #FFFFFF; }
+    .tile-stuck__sub { font-size: 10px; color: #A8C5E5; }
+    .tile-stuck__count {
+      flex: 1; text-align: right;
+      font-size: 22px; font-weight: 700;
+      color: #ef4444;
+    }
+
+    /* ============================================ */
+    /* OPTION A: Subtle dark tile, sky-cyan accent */
+    /* ============================================ */
+    .send-A {
+      background: #141618;
+      padding: 14px 12px;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .send-A__left { display: flex; align-items: center; gap: 10px; }
+    .send-A__title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #38BDF8;
+      letter-spacing: 0.2px;
+    }
+    .send-A__sub {
+      font-size: 10px;
+      color: #A8C5E5;
+      margin-top: 2px;
+    }
+    .send-A__chevron {
+      font-size: 18px;
+      color: #38BDF8;
+      font-weight: 400;
+    }
+
+    /* ============================================ */
+    /* OPTION B: Bold sky-cyan filled CTA */
+    /* ============================================ */
+    .send-B {
+      background: #38BDF8;
+      padding: 14px 12px;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .send-B__title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0a0a0b;
+      letter-spacing: 0.2px;
+    }
+    .send-B__sub {
+      font-size: 10px;
+      color: #0a0a0b;
+      opacity: 0.7;
+      margin-top: 2px;
+    }
+    .send-B__chevron {
+      font-size: 18px;
+      color: #0a0a0b;
+      font-weight: 700;
+    }
+
+    .label-bar {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      margin-bottom: 6px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 style="font-size: 18px; color: white; margin-bottom: 6px;">Send Ledger To Client — Two Options</h1>
+  <p style="color: #A8C5E5; font-size: 12px; margin-bottom: 24px;">
+    Both shown in dashboard context (after ledger lifecycle widget, before Stuck Or Error tile, with reorder).
+  </p>
+
+  <!-- OPTION A -->
+  <div class="mockup-section">
+    <div class="mockup-title">Option A — Subtle accent tile</div>
+    <div class="mockup-subtitle">Sky-cyan title text + chevron on dark background. Reads as "actionable but secondary."</div>
+    <div class="phone-frame">
+      <div class="section-hdr-blue">LEDGER LIFE CYCLE</div>
+      <div class="ll-proxy">
+        <div class="ll-col"><div class="lbl">Review</div><div class="badge"><div class="num">0</div></div><div class="sub">Reviewer</div></div>
+        <div class="ll-col"><div class="lbl">Verify</div><div class="badge"><div class="num">0</div></div><div class="sub">Accounts</div></div>
+        <div class="ll-col"><div class="lbl">Send</div><div class="badge"><div class="num">0</div></div><div class="sub">Anyone</div></div>
+      </div>
+      <div class="send-A">
+        <div class="send-A__left">
+          <div>
+            <div class="send-A__title">Send Ledger to Client</div>
+            <div class="send-A__sub">Pick client, send instantly</div>
+          </div>
+        </div>
+        <div class="send-A__chevron">›</div>
+      </div>
+      <div class="tile-stuck">
+        <div class="tile-stuck__left">
+          <div class="tile-stuck__title">Stuck or Error</div>
+          <div class="tile-stuck__sub">Needs recovery</div>
+        </div>
+        <div class="tile-stuck__count">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPTION B -->
+  <div class="mockup-section">
+    <div class="mockup-title">Option B — Bold CTA tile</div>
+    <div class="mockup-subtitle">Sky-cyan filled background, dark text. Reads as "primary action."</div>
+    <div class="phone-frame">
+      <div class="section-hdr-blue">LEDGER LIFE CYCLE</div>
+      <div class="ll-proxy">
+        <div class="ll-col"><div class="lbl">Review</div><div class="badge"><div class="num">0</div></div><div class="sub">Reviewer</div></div>
+        <div class="ll-col"><div class="lbl">Verify</div><div class="badge"><div class="num">0</div></div><div class="sub">Accounts</div></div>
+        <div class="ll-col"><div class="lbl">Send</div><div class="badge"><div class="num">0</div></div><div class="sub">Anyone</div></div>
+      </div>
+      <div class="send-B">
+        <div>
+          <div class="send-B__title">Send Ledger to Client</div>
+          <div class="send-B__sub">Pick client, send instantly</div>
+        </div>
+        <div class="send-B__chevron">›</div>
+      </div>
+      <div class="tile-stuck">
+        <div class="tile-stuck__left">
+          <div class="tile-stuck__title">Stuck or Error</div>
+          <div class="tile-stuck__sub">Needs recovery</div>
+        </div>
+        <div class="tile-stuck__count">0</div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

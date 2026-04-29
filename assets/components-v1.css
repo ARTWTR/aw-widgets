@@ -46,14 +46,19 @@
   align-items: center;
   gap: var(--space-3);
   /* Mobile tap optimization */
-  touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  cursor: pointer;
+  /* Cursor stays as default — only the badge is tappable */
 }
 
-/* Visual feedback when tapping a column */
-.col:active .badge {
-  transform: scale(0.96);
+/* Badge is the actual tap target — explicit affordance */
+.badge {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* Visual feedback on badge tap (not the whole column) */
+.badge:active {
+  transform: scale(0.94);
   transition: transform var(--duration-fast) var(--ease);
 }
 

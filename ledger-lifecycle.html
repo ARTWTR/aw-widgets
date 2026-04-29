@@ -31,7 +31,7 @@
         <div class="sublabel">Anyone</div>
       </div>
     </div>
-    <div class="version-marker">v3.3</div>
+    <div class="version-marker">v3.4</div>
     <div class="debug-overlay"></div>
   </div>
 
@@ -78,23 +78,53 @@
 
       function attachTapHandlers() {
         REPORTS.forEach(function(report) {
-          var col = document.getElementById(report.colId);
-          if (!col) {
-            AWW.debug('Tap handler: column not found ' + report.colId, 'error');
+          var badge = document.getElementById(report.badgeId);
+          if (!badge) {
+            AWW.debug('Tap handler: badge not found ' + report.badgeId, 'error');
             return;
           }
-          AWW.debug('Tap handler attached: ' + report.colId, 'info');
+          AWW.debug('Tap handler attached: ' + report.badgeId, 'info');
+
+          // Scroll-detection: track finger movement between touchstart and touchend
+          // If finger moved more than threshold pixels, treat as scroll, ignore tap
+          var SCROLL_THRESHOLD = 10; // pixels
+          var startX = 0;
+          var startY = 0;
+          var moved = false;
+
+          badge.addEventListener('touchstart', function(e) {
+            if (e.touches && e.touches[0]) {
+              startX = e.touches[0].clientX;
+              startY = e.touches[0].clientY;
+              moved = false;
+            }
+          }, { passive: true });
+
+          badge.addEventListener('touchmove', function(e) {
+            if (e.touches && e.touches[0]) {
+              var dx = Math.abs(e.touches[0].clientX - startX);
+              var dy = Math.abs(e.touches[0].clientY - startY);
+              if (dx > SCROLL_THRESHOLD || dy > SCROLL_THRESHOLD) {
+                moved = true; // user is scrolling, not tapping
+              }
+            }
+          }, { passive: true });
 
           // Use both pointerup AND click — covers all mobile browser quirks
           var fired = false;
           function onTap(e) {
+            // Skip if this was a scroll, not a tap
+            if (moved) {
+              AWW.debug('Tap suppressed (scroll detected) on ' + report.badgeId, 'info');
+              return;
+            }
             if (fired) return;
             fired = true;
             setTimeout(function() { fired = false; }, 300);
             navigateToReport(report.name);
           }
-          col.addEventListener('pointerup', onTap);
-          col.addEventListener('click', onTap);
+          badge.addEventListener('pointerup', onTap);
+          badge.addEventListener('click', onTap);
         });
       }
 
