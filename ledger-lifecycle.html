@@ -12,19 +12,25 @@
     }
 
     html, body {
-      background: transparent;
+      background: #141618;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       color: #FFFFFF;
       overflow: hidden;
+      min-height: 100vh;
+      height: 100%;
+      width: 100%;
     }
 
     .tile {
       background: #141618;
       padding: 14px 10px;
       width: 100%;
+      min-height: 100vh;
       box-sizing: border-box;
+      display: flex;
+      align-items: center;
     }
 
     .grid {
@@ -32,6 +38,7 @@
       grid-template-columns: 1fr 1fr 1fr;
       gap: 4px;
       align-items: center;
+      width: 100%;
     }
 
     .col {
