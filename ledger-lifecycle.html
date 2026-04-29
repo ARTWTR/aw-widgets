@@ -5,25 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ledger Lifecycle</title>
 
-  <!--
-    Zoho Creator Widget JS SDK v2
-    Provides ZOHO.CREATOR.DATA.* APIs for fetching record counts.
-    Must load BEFORE our inline script attempts to use it.
-  -->
+  <!-- Cache-bust marker: v2.2-2026-04-29 -->
   <script src="https://js.zohostatic.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
 
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html, body {
       background: #141618;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
       color: #FFFFFF;
       overflow: hidden;
       min-height: 100vh;
@@ -39,6 +30,7 @@
       box-sizing: border-box;
       display: flex;
       align-items: center;
+      position: relative;
     }
 
     .grid {
@@ -59,7 +51,6 @@
     .label {
       font-size: 11px;
       color: #A8C5E5;
-      letter-spacing: 0.2px;
       text-align: center;
     }
 
@@ -71,14 +62,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.04) inset,
-        0 4px 12px rgba(0, 0, 0, 0.4);
-      transition: opacity 0.2s ease;
-    }
-
-    .badge.loading {
-      opacity: 0.5;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 4px 12px rgba(0,0,0,0.4);
     }
 
     .number {
@@ -92,142 +76,195 @@
       font-size: 10px;
       color: #A8C5E5;
       text-align: center;
-      opacity: 0.85;
     }
+
+    /* Tiny version marker — confirms which build is live */
+    .version {
+      position: absolute;
+      bottom: 2px;
+      right: 4px;
+      font-size: 7px;
+      color: #4a5566;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    /* Debug bar — shows what each fetch returned. Toggle with double-tap. */
+    .debug {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.85);
+      color: #00ff88;
+      font-family: monospace;
+      font-size: 9px;
+      padding: 6px 8px;
+      max-height: 100%;
+      overflow: auto;
+      display: none;
+      z-index: 10;
+    }
+
+    .debug.show { display: block; }
+
+    .debug-line { margin-bottom: 2px; word-break: break-all; }
+    .debug-line.error { color: #ff6688; }
+    .debug-line.success { color: #00ff88; }
+    .debug-line.info { color: #88ccff; }
   </style>
 </head>
 <body>
-  <div class="tile">
+  <div class="tile" id="tile">
     <div class="grid">
       <div class="col">
         <div class="label">Review</div>
-        <div class="badge" id="badge-review"><div class="number" id="review-count">—</div></div>
+        <div class="badge"><div class="number" id="review-count">—</div></div>
         <div class="sublabel">Reviewer</div>
       </div>
       <div class="col">
         <div class="label">Verify</div>
-        <div class="badge" id="badge-verify"><div class="number" id="verify-count">—</div></div>
+        <div class="badge"><div class="number" id="verify-count">—</div></div>
         <div class="sublabel">Accounts</div>
       </div>
       <div class="col">
         <div class="label">Send</div>
-        <div class="badge" id="badge-send"><div class="number" id="send-count">—</div></div>
+        <div class="badge"><div class="number" id="send-count">—</div></div>
         <div class="sublabel">Anyone</div>
       </div>
     </div>
+    <div class="version">v2.2</div>
+    <div class="debug" id="debug-bar"></div>
   </div>
-
-  <!--
-    NAMING RULE: Subtitles are ROLES, never PERSON NAMES.
-    Per AW_WIDGETS_Foundation_Decision.md — widgets must remain neutral
-    as team membership changes.
-
-    DATA SOURCE: Three Creator reports
-      - to_review (Reviewer queue)
-      - Ledgers_To_Approve (Accounts queue)
-      - Ledgers_To_Send (Anyone queue)
-
-    REFRESH: Counts auto-refresh every 60 seconds while widget is open.
-
-    FALLBACK: If SDK fails to load or API fails, displays "—" instead
-    of crashing. All errors logged to console for debugging.
-  -->
 
   <script>
     (function() {
       'use strict';
 
-      // App config — these match the Creator app structure
       var APP_NAME = 'aw-operations';
       var REPORTS = [
-        { name: 'to_review', elementId: 'review-count', badgeId: 'badge-review' },
-        { name: 'Ledgers_To_Approve', elementId: 'verify-count', badgeId: 'badge-verify' },
-        { name: 'Ledgers_To_Send', elementId: 'send-count', badgeId: 'badge-send' }
+        { name: 'to_review', elementId: 'review-count' },
+        { name: 'Ledgers_To_Approve', elementId: 'verify-count' },
+        { name: 'Ledgers_To_Send', elementId: 'send-count' }
       ];
 
-      var REFRESH_INTERVAL_MS = 60 * 1000; // 60 seconds
+      var DEBUG_ENABLED = window.location.search.indexOf('debug') !== -1;
+      var debugBar = document.getElementById('debug-bar');
 
-      function setLoading(loading) {
-        REPORTS.forEach(function(r) {
-          var badge = document.getElementById(r.badgeId);
-          if (badge) {
-            if (loading) {
-              badge.classList.add('loading');
-            } else {
-              badge.classList.remove('loading');
-            }
-          }
-        });
+      // Toggle debug overlay with double-tap on the tile (mobile-friendly)
+      var lastTap = 0;
+      document.getElementById('tile').addEventListener('click', function(e) {
+        var now = Date.now();
+        if (now - lastTap < 400) {
+          debugBar.classList.toggle('show');
+        }
+        lastTap = now;
+      });
+
+      // Auto-show debug if URL has ?debug
+      if (DEBUG_ENABLED) debugBar.classList.add('show');
+
+      function debug(msg, type) {
+        type = type || 'info';
+        console.log('[ledger-lifecycle] ' + msg);
+        var line = document.createElement('div');
+        line.className = 'debug-line ' + type;
+        line.textContent = msg;
+        debugBar.appendChild(line);
+        // Keep only last 30 lines visible
+        while (debugBar.children.length > 30) {
+          debugBar.removeChild(debugBar.firstChild);
+        }
       }
 
       function updateCount(elementId, count) {
         var el = document.getElementById(elementId);
-        if (el) {
-          el.textContent = count;
+        if (el) el.textContent = count;
+      }
+
+      // Maximally defensive count extraction
+      function extractCount(response) {
+        if (response === null || response === undefined) return null;
+        if (typeof response === 'number') return response;
+        if (typeof response === 'string' && /^\d+$/.test(response)) return response;
+
+        // Standard documented shape: { code: 3000, result: { records_count: "4" } }
+        if (response.result && response.result.records_count !== undefined) {
+          return response.result.records_count;
         }
+        // Flatter shapes
+        if (response.records_count !== undefined) return response.records_count;
+        if (response.data && response.data.records_count !== undefined) return response.data.records_count;
+        if (response.count !== undefined) return response.count;
+
+        return null;
+      }
+
+      // Detect "no records exist" error in any of its possible shapes
+      function isEmptyReportError(err) {
+        if (!err) return false;
+        var s = '';
+        try { s = JSON.stringify(err); } catch(e) { s = String(err); }
+        if (s.indexOf('9220') !== -1) return true;
+        if (s.toLowerCase().indexOf('no records exist') !== -1) return true;
+        if (s.toLowerCase().indexOf('no records found') !== -1) return true;
+        return false;
       }
 
       function fetchReportCount(report) {
-        var config = {
-          app_name: APP_NAME,
-          report_name: report.name
-        };
-
-        console.log('[ledger-lifecycle] Fetching count for ' + report.name);
+        var config = { app_name: APP_NAME, report_name: report.name };
+        debug('Fetching ' + report.name + '...', 'info');
 
         return ZOHO.CREATOR.DATA.getRecordCount(config)
           .then(function(response) {
-            console.log('[ledger-lifecycle] Response for ' + report.name + ':', response);
-            if (response && response.code === 3000 && response.result) {
-              var count = response.result.records_count;
+            var rawShape = '';
+            try { rawShape = JSON.stringify(response).substring(0, 200); } catch(e) {}
+            debug(report.name + ' OK: ' + rawShape, 'success');
+
+            var count = extractCount(response);
+            if (count !== null) {
               updateCount(report.elementId, count);
               return count;
-            } else {
-              console.warn('[ledger-lifecycle] Unexpected response shape for ' + report.name, response);
-              updateCount(report.elementId, '?');
-              return null;
             }
+
+            debug(report.name + ' UNEXPECTED SHAPE', 'error');
+            updateCount(report.elementId, '?');
+            return null;
           })
           .catch(function(err) {
-            console.error('[ledger-lifecycle] Error fetching ' + report.name + ':', err);
-            // Zoho returns code 9220 ("No records exist") for empty reports.
-            // This is not really an error — it just means count = 0.
-            if (err && (err.code === 9220 || (err.responseText && err.responseText.indexOf('9220') !== -1))) {
-              console.log('[ledger-lifecycle] ' + report.name + ' is empty — treating as 0');
+            var errStr = '';
+            try { errStr = JSON.stringify(err).substring(0, 200); } catch(e) { errStr = String(err); }
+
+            if (isEmptyReportError(err)) {
+              debug(report.name + ' EMPTY (=0): ' + errStr, 'info');
               updateCount(report.elementId, '0');
               return 0;
             }
+
+            debug(report.name + ' ERROR: ' + errStr, 'error');
             updateCount(report.elementId, '!');
             return null;
           });
       }
 
-      function refreshAllCounts() {
+      function refreshAll() {
         if (typeof ZOHO === 'undefined' || !ZOHO.CREATOR || !ZOHO.CREATOR.DATA) {
-          console.warn('[ledger-lifecycle] Zoho SDK not available — skipping refresh. (This is expected if widget is viewed directly on GitHub.)');
+          debug('Zoho SDK not detected (standalone mode)', 'error');
           REPORTS.forEach(function(r) { updateCount(r.elementId, '—'); });
           return;
         }
-
-        setLoading(true);
-        var promises = REPORTS.map(fetchReportCount);
-        Promise.all(promises).finally(function() {
-          setLoading(false);
-        });
+        REPORTS.forEach(fetchReportCount);
       }
 
       function init() {
-        console.log('[ledger-lifecycle] Initializing widget...');
-
-        var inZoho = (typeof ZOHO !== 'undefined' && ZOHO.CREATOR && ZOHO.CREATOR.DATA);
-        if (!inZoho) {
-          console.warn('[ledger-lifecycle] Zoho Creator SDK not detected. Widget is likely being viewed standalone (e.g. directly on GitHub Pages). Counts will display as dashes.');
-          return;
+        debug('Init v2.2 — ' + new Date().toISOString(), 'info');
+        debug('SDK present: ' + (typeof ZOHO !== 'undefined'), 'info');
+        if (typeof ZOHO !== 'undefined') {
+          debug('ZOHO.CREATOR: ' + (typeof ZOHO.CREATOR), 'info');
+          debug('ZOHO.CREATOR.DATA: ' + (typeof (ZOHO.CREATOR && ZOHO.CREATOR.DATA)), 'info');
         }
-
-        console.log('[ledger-lifecycle] Zoho SDK detected. Fetching live counts.');
-        refreshAllCounts();
-        setInterval(refreshAllCounts, REFRESH_INTERVAL_MS);
+        refreshAll();
+        setInterval(refreshAll, 60000);
       }
 
       if (document.readyState === 'loading') {
