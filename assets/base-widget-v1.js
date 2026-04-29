@@ -235,118 +235,42 @@
   };
 
   /* ===========================================================================
-     DRAWER — slide-up bottom sheet, summoned by any widget
+     NAVIGATION — open Zoho native views from inside widget
      =========================================================================== */
 
-  AWW.Drawer = (function() {
-    var scrim = null;
-    var drawer = null;
-    var titleEl = null;
-    var contentEl = null;
-    var isOpen = false;
-
-    function ensureDOM() {
-      if (drawer) return;
-
-      // Build scrim
-      scrim = document.createElement('div');
-      scrim.className = 'drawer-scrim';
-      scrim.addEventListener('click', close);
-
-      // Build drawer
-      drawer = document.createElement('div');
-      drawer.className = 'drawer';
-      drawer.innerHTML =
-        '<div class="drawer__handle"></div>' +
-        '<div class="drawer__header">' +
-          '<div class="drawer__title"></div>' +
-          '<button class="drawer__close" aria-label="Close">×</button>' +
-        '</div>' +
-        '<div class="drawer-content"></div>';
-
-      titleEl = drawer.querySelector('.drawer__title');
-      contentEl = drawer.querySelector('.drawer-content');
-      drawer.querySelector('.drawer__close').addEventListener('click', close);
-
-      // Swipe-down to close (basic implementation)
-      var startY = 0;
-      var currentY = 0;
-      var dragging = false;
-      drawer.querySelector('.drawer__handle').addEventListener('touchstart', function(e) {
-        startY = e.touches[0].clientY;
-        dragging = true;
-      });
-      drawer.addEventListener('touchmove', function(e) {
-        if (!dragging) return;
-        currentY = e.touches[0].clientY;
-        var delta = Math.max(0, currentY - startY);
-        drawer.style.transform = 'translateY(' + delta + 'px)';
-      });
-      drawer.addEventListener('touchend', function() {
-        if (!dragging) return;
-        dragging = false;
-        var delta = currentY - startY;
-        if (delta > 100) {
-          close();
-        } else {
-          drawer.style.transform = '';
-        }
-      });
-
-      document.body.appendChild(scrim);
-      document.body.appendChild(drawer);
+  /**
+   * Navigate the parent window to a Zoho Creator URL.
+   * Common URL patterns:
+   *   '#Report:report_link_name'         — open a report in current app
+   *   '#Form:form_link_name'             — open a form
+   *   '#Page:page_link_name'             — open a page
+   *   'https://full.url'                 — open external URL
+   *
+   * @param {string} url - The URL to navigate to (relative or absolute)
+   * @param {string} action - 'open' (default) navigates parent, 'close' closes widget
+   */
+  AWW.navigate = function(url, action) {
+    action = action || 'open';
+    if (typeof ZOHO === 'undefined' || !ZOHO.CREATOR || !ZOHO.CREATOR.UTIL) {
+      AWW.debug('navigate: SDK unavailable (standalone mode) — would have opened ' + url, 'warn');
+      return false;
     }
-
-    function open(opts) {
-      ensureDOM();
-      titleEl.textContent = opts.title || '';
-      if (typeof opts.content === 'string') {
-        contentEl.innerHTML = opts.content;
-      } else if (opts.content instanceof Node) {
-        contentEl.innerHTML = '';
-        contentEl.appendChild(opts.content);
-      }
-      // Force reflow before adding is-open class so transition runs
-      drawer.offsetHeight;
-      scrim.classList.add('is-open');
-      drawer.classList.add('is-open');
-      isOpen = true;
-      AWW.debug('Drawer opened: ' + (opts.title || 'untitled'), 'info');
+    try {
+      ZOHO.CREATOR.UTIL.navigateParentURL({ action: action, url: url });
+      AWW.debug('navigate: ' + url, 'success');
+      return true;
+    } catch (err) {
+      AWW.debug('navigate ERROR: ' + err.message, 'error');
+      return false;
     }
+  };
 
-    function close() {
-      if (!isOpen) return;
-      scrim.classList.remove('is-open');
-      drawer.classList.remove('is-open');
-      drawer.style.transform = '';
-      isOpen = false;
-      AWW.debug('Drawer closed', 'info');
-    }
-
-    function setLoading(label) {
-      if (!contentEl) return;
-      contentEl.innerHTML = '<div class="drawer-content__loading">' + (label || 'Loading...') + '</div>';
-    }
-
-    function setEmpty(label) {
-      if (!contentEl) return;
-      contentEl.innerHTML = '<div class="drawer-content__empty">' + (label || 'No items.') + '</div>';
-    }
-
-    function setContent(html) {
-      if (!contentEl) return;
-      contentEl.innerHTML = html;
-    }
-
-    return {
-      open: open,
-      close: close,
-      setLoading: setLoading,
-      setEmpty: setEmpty,
-      setContent: setContent,
-      isOpen: function() { return isOpen; }
-    };
-  })();
+  /**
+   * Convenience helper: navigate to a report by link name.
+   */
+  AWW.navigateToReport = function(reportLinkName) {
+    return AWW.navigate('#Report:' + reportLinkName);
+  };
 
   /* ===========================================================================
      PULL-TO-REFRESH — basic touch gesture
@@ -358,8 +282,7 @@
     var threshold = 60;
 
     document.body.addEventListener('touchstart', function(e) {
-      // Only trigger if at top of scroll AND drawer is closed
-      if (window.scrollY > 0 || AWW.Drawer.isOpen()) return;
+      if (window.scrollY > 0) return;
       startY = e.touches[0].clientY;
       pulling = true;
     });
@@ -367,7 +290,6 @@
     document.body.addEventListener('touchmove', function(e) {
       if (!pulling) return;
       var delta = e.touches[0].clientY - startY;
-      // No visual indicator yet — keeping it simple
       if (delta > threshold) {
         pulling = false;
         AWW.debug('Pull-to-refresh triggered', 'info');

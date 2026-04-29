@@ -5,41 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ledger Lifecycle</title>
 
-  <!-- Shared design system -->
   <link rel="stylesheet" href="./assets/design-tokens-v1.css">
   <link rel="stylesheet" href="./assets/components-v1.css">
-
-  <!-- Zoho Widget JS SDK v2 -->
   <script src="https://js.zohostatic.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
-
-  <!-- Shared base widget JS -->
   <script src="./assets/base-widget-v1.js"></script>
 </head>
 <body>
   <div class="tile">
     <div class="grid-3">
-      <!-- Review column -->
-      <div class="col" id="col-review" data-report="to_review" data-title="Pending Review">
+      <div class="col" id="col-review" data-report="to_review">
         <div class="label">Review</div>
         <div class="badge" id="badge-review"><div class="number" id="count-review">—</div></div>
         <div class="sublabel">Reviewer</div>
       </div>
 
-      <!-- Verify column -->
-      <div class="col" id="col-verify" data-report="Ledgers_To_Approve" data-title="Pending Approval">
+      <div class="col" id="col-verify" data-report="Ledgers_To_Approve">
         <div class="label">Verify</div>
         <div class="badge" id="badge-verify"><div class="number" id="count-verify">—</div></div>
         <div class="sublabel">Accounts</div>
       </div>
 
-      <!-- Send column -->
-      <div class="col" id="col-send" data-report="Ledgers_To_Send" data-title="Ready to Send">
+      <div class="col" id="col-send" data-report="Ledgers_To_Send">
         <div class="label">Send</div>
         <div class="badge" id="badge-send"><div class="number" id="count-send">—</div></div>
         <div class="sublabel">Anyone</div>
       </div>
     </div>
-    <div class="version-marker">v3.1</div>
+    <div class="version-marker">v3.2</div>
     <div class="debug-overlay"></div>
   </div>
 
@@ -60,7 +52,6 @@
         var badge = document.getElementById(report.badgeId);
         if (el) el.textContent = (count === null ? '—' : count);
         if (badge) {
-          // Toggle the "has items" ring based on count > 0
           if (count && parseInt(count, 10) > 0) {
             badge.classList.add('badge--has-items');
           } else {
@@ -80,7 +71,11 @@
         return AWW.runSequential(tasks);
       }
 
-      // Tap-to-expand: when user taps a column, open drawer with records
+      function navigateToReport(reportName) {
+        AWW.debug('NAVIGATE: ' + reportName, 'success');
+        AWW.navigateToReport(reportName);
+      }
+
       function attachTapHandlers() {
         REPORTS.forEach(function(report) {
           var col = document.getElementById(report.colId);
@@ -90,82 +85,23 @@
           }
           AWW.debug('Tap handler attached: ' + report.colId, 'info');
 
-          // Use pointerup — more reliable than click inside iframes on mobile
-          // Falls back to click for non-pointer browsers
+          // Use both pointerup AND click — covers all mobile browser quirks
           var fired = false;
-          col.addEventListener('pointerup', function(e) {
-            if (fired) return;
-            fired = true;
-            setTimeout(function() { fired = false; }, 300); // dedupe
-            AWW.debug('TAP: ' + report.colId, 'success');
-            openRecordsDrawer(report);
-          });
-          col.addEventListener('click', function(e) {
+          function onTap(e) {
             if (fired) return;
             fired = true;
             setTimeout(function() { fired = false; }, 300);
-            AWW.debug('CLICK: ' + report.colId, 'success');
-            openRecordsDrawer(report);
-          });
-        });
-      }
-
-      function openRecordsDrawer(report) {
-        var col = document.getElementById(report.colId);
-        var title = col.dataset.title || report.name;
-
-        AWW.Drawer.open({ title: title, content: '<div class="drawer-content__loading">Loading records...</div>' });
-
-        AWW.fetchRecords(report.name).then(function(records) {
-          if (!records || records.length === 0) {
-            AWW.Drawer.setEmpty('No records in this queue.');
-            return;
+            navigateToReport(report.name);
           }
-
-          var html = records.map(function(rec) {
-            // Try to extract a meaningful title from the record
-            // Common field names: client name, customer name, etc.
-            var title = rec.client_name || rec.customer_name || rec.Name || rec.title ||
-                        (rec.books_customer && rec.books_customer.display_value) ||
-                        rec.Email || rec.ID || 'Record ' + (rec.ID || '');
-            var meta = rec.Added_Time || rec.Modified_Time || '';
-
-            return '<div class="list-item" data-record-id="' + (rec.ID || '') + '">' +
-                     '<div class="list-item__title">' + escapeHtml(String(title)) + '</div>' +
-                     (meta ? '<div class="list-item__meta">' + escapeHtml(formatTime(meta)) + '</div>' : '') +
-                     '<div class="list-item__chevron">›</div>' +
-                   '</div>';
-          }).join('');
-
-          AWW.Drawer.setContent(html);
+          col.addEventListener('pointerup', onTap);
+          col.addEventListener('click', onTap);
         });
-      }
-
-      function escapeHtml(s) {
-        return s.replace(/[&<>"']/g, function(c) {
-          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-        });
-      }
-
-      function formatTime(t) {
-        // Best-effort time formatting
-        if (!t) return '';
-        try {
-          var d = new Date(t);
-          if (isNaN(d.getTime())) return t;
-          var diff = Date.now() - d.getTime();
-          var hours = Math.floor(diff / 3600000);
-          if (hours < 1) return 'just now';
-          if (hours < 24) return hours + 'h ago';
-          return Math.floor(hours / 24) + 'd ago';
-        } catch (e) { return t; }
       }
 
       function init() {
         attachTapHandlers();
         refreshAll();
         setInterval(refreshAll, 60000);
-        AWW.enablePullToRefresh(refreshAll);
       }
 
       if (document.readyState === 'loading') {

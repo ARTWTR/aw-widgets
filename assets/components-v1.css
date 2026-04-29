@@ -239,99 +239,12 @@
   font-size: var(--text-md);
 }
 
-/* ===== DRAWER (slides up from bottom) ===== */
-.drawer-scrim {
-  position: fixed;
-  inset: 0;
-  background: var(--bg-overlay);
-  opacity: 0;
-  pointer-events: none;
-  z-index: var(--z-drawer-scrim);
-  transition: opacity var(--duration-normal) var(--ease);
-}
-
-.drawer-scrim.is-open {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.drawer {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--bg-tile-elevated);
-  border-top-left-radius: var(--radius-xl);
-  border-top-right-radius: var(--radius-xl);
-  box-shadow: var(--shadow-drawer);
-  z-index: var(--z-drawer);
-  transform: translateY(100%);
-  transition: transform var(--duration-normal) var(--ease);
-  max-height: 85vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.drawer.is-open {
-  transform: translateY(0);
-}
-
-.drawer__handle {
-  /* Pull-tab at top of drawer (universal swipe-down affordance) */
-  width: 36px;
-  height: 4px;
-  background: var(--text-tertiary);
-  border-radius: var(--radius-full);
-  margin: var(--space-4) auto var(--space-3);
-  flex-shrink: 0;
-  opacity: 0.5;
-}
-
-.drawer__header {
-  padding: var(--space-3) var(--space-5) var(--space-4);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--bg-base);
-  flex-shrink: 0;
-}
-
-.drawer__title {
-  font-size: var(--text-md);
-  font-weight: var(--weight-bold);
-  color: var(--text-primary);
-}
-
-.drawer__close {
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 20px;
-  cursor: pointer;
-  padding: var(--space-2);
-  line-height: 1;
-}
-
-.drawer-content {
-  padding: var(--space-4) var(--space-5);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  flex: 1;
-}
-
-.drawer-content__empty {
-  text-align: center;
-  color: var(--text-tertiary);
-  font-size: var(--text-sm);
-  padding: var(--space-7) var(--space-5);
-}
-
-.drawer-content__loading {
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-  padding: var(--space-7) var(--space-5);
-}
+/* ===== DRAWER REMOVED in v3.2 =====
+   Earlier versions had a slide-up drawer pattern. Removed because position:fixed
+   inside Zoho's iframe escapes widget bounds (drawer rendered over Zoho chrome).
+   Replaced with AWW.navigateToReport() in base-widget — taps now open Zoho's
+   native report view, which is simpler and consistent with native UX.
+   See AW_WIDGETS_Foundation_Decision.md Section 14 Quirk 9. */
 
 /* ===== SECTION HEADER (matches existing ZML headers) ===== */
 .section-header {
